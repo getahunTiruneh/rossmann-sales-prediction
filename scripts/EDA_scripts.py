@@ -99,20 +99,27 @@ class CustomerBehaviorAnalyzer:
         and plots the average sales behavior for each period.
         
         Parameters:
-        - df: DataFrame with 'Date', 'IsHoliday', and 'Sales' columns.
+        - df: DataFrame with 'Date', 'StateHoliday', and 'Sales' columns.
         
         Returns:
-        - None
+        None 
         """
-        # Default to 'After Holiday'
-        df['HolidayStatus'] = 'After Holiday'
+        # Ensure 'Date' is in datetime format
+        df['Date'] = pd.to_datetime(df['Date'])
         
-        # Assign 'During Holiday'
-        df.loc[df['IsHoliday'] == 1, 'HolidayStatus'] = 'During Holiday'
+        # Default to 'Regular Day'
+        df['HolidayStatus'] = 'Regular Day'
         
-        # Assign 'Before Holiday' by shifting 'IsHoliday'
-        df['IsNextDayHoliday'] = df['IsHoliday'].shift(-1).fillna(0).astype(int)
-        df.loc[df['IsNextDayHoliday'] == 1, 'HolidayStatus'] = 'Before Holiday'
+        # Assign 'During Holiday' where StateHoliday is not 0 (assuming 0 = no holiday)
+        df.loc[df['StateHoliday'] != '0', 'HolidayStatus'] = 'During Holiday'
+        
+        # Assign 'Before Holiday' using shift() to identify the day before a holiday
+        df['IsNextDayHoliday'] = df['StateHoliday'].shift(-1).fillna('0')
+        df.loc[df['IsNextDayHoliday'] != '0', 'HolidayStatus'] = 'Before Holiday'
+        
+        # Assign 'After Holiday' using shift() to identify the day after a holiday
+        df['IsPrevDayHoliday'] = df['StateHoliday'].shift(1).fillna('0')
+        df.loc[df['IsPrevDayHoliday'] != '0', 'HolidayStatus'] = 'After Holiday'
         
         # Group by 'HolidayStatus' and calculate average sales
         sales_by_period = df.groupby('HolidayStatus')['Sales'].mean().reset_index()
@@ -122,7 +129,7 @@ class CustomerBehaviorAnalyzer:
         sns.barplot(x='HolidayStatus', y='Sales', data=sales_by_period, palette='Set2')
         plt.title('Average Sales Before, During, and After Holidays')
         plt.ylabel('Average Sales')
-        plt.xlabel('Period')
+        plt.xlabel('Holiday Period')
         plt.show()
   
     # Assuming 'StateHoliday' is a binary feature and 'Sales' is the target
@@ -315,4 +322,37 @@ class CustomerBehaviorAnalyzer:
         plt.tight_layout()
 
         # Show the plot
+        plt.show()
+        
+    def get_top_performing_stores(self, df, top_n=4):
+        """
+        Identify top-performing stores based on total sales.
+        
+        Parameters:
+        - df: Pandas DataFrame containing 'Store' and 'Sales' columns.
+        - top_n: Number of top stores to return. Default is 10.
+        
+        Returns:
+        - top_stores_df: DataFrame of top-performing stores.
+        """
+        # Aggregate sales by store
+        store_sales = df.groupby('StoreType')['Sales'].sum().reset_index()
+        
+        # Sort stores by sales in descending order and select the top N stores
+        top_stores_df = store_sales.sort_values(by='Sales', ascending=False).head(top_n)
+        
+        return top_stores_df
+    def plot_top_performing_stores(self, top_stores_df):
+        """
+        Plot top-performing stores using a bar chart.
+        
+        Parameters:
+        - top_stores_df: DataFrame of top-performing stores.
+        """
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x='StoreType', y='Sales', data=top_stores_df, palette='viridis')
+        plt.title('Top Performing Stores Types by Total Sales')
+        plt.xlabel('Store Type')
+        plt.ylabel('Total Sales')
+        plt.xticks(rotation=45)
         plt.show()
