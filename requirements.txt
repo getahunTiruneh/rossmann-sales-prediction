@@ -2,8 +2,7 @@ pandas
 numpy
 seaborn
 matplotlib
-sklearn
+scikit-learn
 scipy
 holidays
-dateutil
 logging
