@@ -34,6 +34,13 @@ class CustomerBehaviorAnalyzer:
     
     # Data cleaning function
     def clean_data(self, df):
+        """
+        Cleans the input DataFrame by handling missing values and removing outliers.
+        Args:
+            df (pandas.DataFrame): Input DataFrame
+        Returns:
+            pandas.DataFrame: Cleaned DataFrame
+        """
         logging.info("Cleaning data")
         # Handling missing values
         imputer = SimpleImputer(strategy='mean')
@@ -44,6 +51,14 @@ class CustomerBehaviorAnalyzer:
         
         return df
     def handle_catagorical_values(self, df,columns):
+        """
+        Handles categorical values in the dataset by converting them to numerical using one-hot encoding.
+        Args:
+            df (pandas.DataFrame): Input DataFrame
+            columns (list): List of column names to be encoded
+        Returns:
+            pandas.DataFrame: DataFrame with categorical values encoded
+        """
         logging.info("Handling categorical values")
         # Convert categorical variables to numerical using one-hot encoding
         df = pd.get_dummies(df, columns)
@@ -104,6 +119,7 @@ class CustomerBehaviorAnalyzer:
         Returns:
         None 
         """
+        logging.info("Plotting holiday effects...")
         # Ensure 'Date' is in datetime format
         df['Date'] = pd.to_datetime(df['Date'])
         
@@ -144,7 +160,7 @@ class CustomerBehaviorAnalyzer:
         # plot sales before, during, and after holidays
         plt.figure(figsize=(12, 6))
         sns.histplot(data=df['IsHoliday'])
-        plt.title('Sales Before, During, and After Holidays')
+        plt.title('Sales on Holidays and non-Holidays')
         plt.show()
     # Correlation analysis and scatter plot
     def correlation_sales_customers(self, df):
@@ -188,52 +204,37 @@ class CustomerBehaviorAnalyzer:
         plt.title('Sales with and without Promotions')
         plt.show()
     
-    def add_holiday_season(slef, df):
+    # Function to analyze and plot the effect of state holidays on sales
+    def plot_sales_by_state_holiday(self, df):
         """
-        Adds columns for Christmas and Easter seasons to indicate if the date falls within these holiday periods.
-        
-        Parameters:
-        - df: Pandas DataFrame with a 'Date' column in datetime format.
-        
+        Plots the effect of state holidays on sales, with labeled holiday categories.
+        - df: DataFrame containing sales and StateHoliday columns.
         Returns:
-        - df: DataFrame with additional 'IsChristmas' and 'IsEaster' columns
+        None
         """
-        logging.info("Adding holiday season columns...")
-        # Ensure 'Date' column is in datetime format
-        if not pd.api.types.is_datetime64_any_dtype(df['Date']):
-            df['Date'] = pd.to_datetime(df['Date'])
+        logging.info("Plotting sales effects due to state holidays...")
+        # Mapping the StateHoliday values to descriptive labels
+        holiday_mapping = {
+            '0': 'No Holiday',
+            'a': 'Public Holiday',
+            'b': 'Easter Holiday',
+            'c': 'Christmas Holiday'
+        }
         
-        # Christmas season: Dec 20 - Dec 31
-        df['IsChristmasSeason'] = ((df['Date'].dt.month == 12) & (df['Date'].dt.day >= 20)) | (df['Date'].dt.month == 1)
+        # Apply the mapping to the StateHoliday column
+        df['StateHoliday'] = df['StateHoliday'].map(holiday_mapping)
+
+        # Group data by StateHoliday and calculate the mean sales for each category
+        sales_by_holiday = df.groupby('StateHoliday')['Sales'].mean().reset_index()
         
-        # Easter season: Calculate Easter and create a range for Easter season
-        easter_dates = pd.to_datetime([easter.easter(year) for year in df['Date'].dt.year.unique()])
-        
-        # Easter season could be considered a few days before and after Easter Sunday
-        df['IsEasterSeason'] = df['Date'].isin(easter_dates) | df['Date'].isin(easter_dates + pd.Timedelta(days=1)) | \
-                            df['Date'].isin(easter_dates - pd.Timedelta(days=1))
-        
-        return df
-    def plot_seasonal_sales(self, df, season_col, title):
-        """
-        Plots average sales during and outside a given holiday season.
-        
-        Parameters:
-        - df: Pandas DataFrame with 'Sales' and a seasonal indicator column (0 or 1).
-        - season_col: The name of the column indicating the season (e.g., 'IsChristmasSeason' or 'IsEasterSeason').
-        - title: The title of the plot.
-        """
-        logging.info("Plotting seasonal sales effects...")
-        # Calculate the average sales for each season
-        plt.figure(figsize=(12, 6))
-        seasonal_effect = df.groupby(season_col)['Sales'].mean()
-        seasonal_effect.plot(kind='bar', color=['skyblue', 'green'])
-        plt.title(title)
-        plt.xlabel(f'{season_col}')
+        # Create a bar plot to visualize the sales by holiday type
+        plt.figure(figsize=(8, 6))
+        sns.barplot(x='StateHoliday', y='Sales', data=sales_by_holiday)
+        plt.title('Average Sales During State Holidays')
+        plt.xlabel('Holiday Type')
         plt.ylabel('Average Sales')
-        plt.xticks(ticks=[0, 1], labels=['Non-Holiday', 'Holiday Season'])
+        plt.xticks(rotation=45)  # Rotate labels for better readability
         plt.show()
-    
     # Scatter plot to check distance vs sales relationship
     def competitor_distance_sales(self, df):
         """
@@ -298,6 +299,16 @@ class CustomerBehaviorAnalyzer:
         plt.show()
     # Sample function to plot sales before and after competitor entry
     def plot_sales_vs_competitor(self, df):
+        """
+        Plots the sales before and after a competitor enters the store.
+
+        Parameters:
+        - df: Pandas DataFrame with 'Date', 'Sales', and 'CompetitionDistance' columns.
+
+        Returns:
+        None
+        """
+        logging.info("Plotting sales before and after competitor entry...")
         plt.figure(figsize=(12, 6))
 
         # Convert 'Date' to datetime for proper time series plotting
@@ -335,6 +346,7 @@ class CustomerBehaviorAnalyzer:
         Returns:
         - top_stores_df: DataFrame of top-performing stores.
         """
+        logging.info("Identifying top-performing stores...")
         # Aggregate sales by store
         store_sales = df.groupby('StoreType')['Sales'].sum().reset_index()
         
@@ -349,10 +361,43 @@ class CustomerBehaviorAnalyzer:
         Parameters:
         - top_stores_df: DataFrame of top-performing stores.
         """
+        logging.info("Plotting top-performing stores...")
+        # Create a bar chart for top performing stores
         plt.figure(figsize=(10, 6))
         sns.barplot(x='StoreType', y='Sales', data=top_stores_df, palette='viridis')
         plt.title('Top Performing Stores Types by Total Sales')
         plt.xlabel('Store Type')
         plt.ylabel('Total Sales')
         plt.xticks(rotation=45)
+        plt.show()
+    def analyze_promo_effectiveness(self, df):
+        """
+        Analyze the effectiveness of promotions by comparing sales with and without promos.
+        Identify which stores benefit the most from promotions.
+        
+        Parameters:
+        - df: DataFrame containing 'Store', 'Promo', 'Sales', and other relevant columns.
+        
+        Returns:
+        - promo_analysis: DataFrame with store-level analysis of promo effectiveness.
+        """
+        # Ensure 'Date' is in datetime format
+        df['Date'] = pd.to_datetime(df['Date'])
+
+        # Now, analyze promo effectiveness at the store level
+        store_sales_by_promo = df.groupby(['StoreType', 'Promo'])['Sales'].mean().unstack().fillna(0)
+
+        # Calculate sales uplift during promotions (Promo = 1 vs Promo = 0)
+        store_sales_by_promo['SalesUplift'] = store_sales_by_promo[1] - store_sales_by_promo[0]
+
+        # Sort stores by the most sales uplift during promotions
+        promo_analysis = store_sales_by_promo.sort_values(by='SalesUplift', ascending=False).reset_index()
+
+        # Plot top 10 stores with the highest sales uplift during promos
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x='SalesUplift', y='StoreType', data=promo_analysis.head(10), palette='coolwarm')
+        plt.title('Stores Types with Highest Sales Uplift During Promotions')
+        plt.xlabel('Sales Uplift')
+        plt.ylabel('Store')
+        plt.xticks(rotation=45, ha='right')
         plt.show()
