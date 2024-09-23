@@ -1,6 +1,8 @@
 import datetime
 import numpy as np
 import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
@@ -12,6 +14,8 @@ class ModelBuilder:
     def __init__(self, data):
         self.data = data
         self.model = None
+        self.X_train = None  # Store X_train to access feature names later
+        self.y_train = None
 
     def split_data(self, target_column):
         """
@@ -43,11 +47,13 @@ class ModelBuilder:
         """
         X, y = self.split_data(target_column='Sales')
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+        # Save the training data in class variables
+        self.X_train = X_train
+        self.y_train = y_train
         # Model Pipeline
         pipeline = Pipeline([
             ('scaler', StandardScaler()),
-            ('rf', RandomForestRegressor(n_estimators=100, random_state=42))
+            ('rf', RandomForestRegressor(n_estimators=50, random_state=42))
         ])
         pipeline.fit(X_train, y_train)
         self.model = pipeline
@@ -80,18 +86,33 @@ class ModelBuilder:
         print(f"Model saved as {filename}")
         return filename
 
-    def feature_importance(self):
+    def feature_importance(self, plot=True):
         """
         Extracts and returns feature importance from the Random Forest model.
+        
+        If plot=True, displays a bar plot of feature importance.
+
+        Args:
+            plot (bool): If True, plot the feature importances.
 
         Returns:
             pd.DataFrame: Sorted feature importance or None if unavailable.
         """
         if hasattr(self.model.named_steps['rf'], 'feature_importances_'):
             importances = self.model.named_steps['rf'].feature_importances_
-            features = self.preprocessor.train_df.drop(columns=['Sales']).columns
+            features = self.X_train.columns  # Access features from saved X_train
             importance_df = pd.DataFrame({'Feature': features, 'Importance': importances})
-            return importance_df.sort_values(by='Importance', ascending=False)
+            importance_df = importance_df.sort_values(by='Importance', ascending=False)
+            
+            if plot:
+                # Plotting feature importances
+                plt.figure(figsize=(10, 6))
+                sns.barplot(x='Importance', y='Feature', data=importance_df)
+                plt.title('Feature Importance')
+                plt.tight_layout()
+                plt.show()
+            
+            return importance_df
         else:
             print("No feature importances available.")
             return None
