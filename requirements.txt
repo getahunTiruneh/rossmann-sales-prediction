@@ -2,6 +2,8 @@ pandas
 numpy
 matplotlib
 seaborn
+logging
+scipy
 tensorflow
 statsmodels
 scikit-learn==1.3.0
