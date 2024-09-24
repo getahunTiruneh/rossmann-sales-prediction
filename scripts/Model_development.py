@@ -80,7 +80,7 @@ class ModelBuilder:
         filename = f"random_forest_model-{timestamp}.pkl"
 
         # Serialize the model
-        with open(filename, 'wb') as f:
+        with open(f"../model/{filename}", 'wb') as f:
             pickle.dump(self.model, f)
         
         print(f"Model saved as {filename}")
