@@ -14,7 +14,7 @@ Rossmann operates over 3,000 drug stores across 7 European countries. The task i
 - [Dataset](#dataset)
 - [Project Structure](#project-structure)
 - [Data Preprocessing](#data-preprocessing)
-- [Machine Learning Model](#machine-learning-model)
+- [Deep Learning Model](#deep-learning-model)
 - [Feature Importance & Confidence Interval](#feature-importance--confidence-interval)
 - [Model Serialization](#model-serialization)
 - [Conclusion](#conclusion)
@@ -47,12 +47,15 @@ Predicting sales for Rossmann stores using Random Forest Regressor and LSTM. Ste
 5. **Holiday Proximity**: Calculate days to/from holidays.
 6. **Scaling**: Standardize features.
 
-## Machine Learning Model
-
+## Deep Learning Model
+Time Series Preparation: Transform to supervised learning format.
+LSTM Model: Built with TensorFlow/Keras.
+Evaluation: R-squared value and visual comparison.
 ## Feature Importance & Confidence Interval
-
+Extract feature importance from Random Forest and estimate confidence intervals using bootstrap sampling.
 
 ## Model Serialization
-
+Save models with timestamps for tracking:
 
 ## Conclusion
+This project demonstrates predicting Rossmann store sales using both machine learning and deep learning. Steps include preprocessing, feature engineering, model building, evaluation, and serialization.
