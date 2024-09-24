@@ -105,10 +105,5 @@ class DataProcessing:
         df = pd.get_dummies(df, columns)
         return df
 
-
 if __name__ == '__main__':
-<<<<<<< HEAD
     unittest.main()
-=======
-    unittest.main()
->>>>>>> task-2
