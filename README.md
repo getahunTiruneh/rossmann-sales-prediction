@@ -9,15 +9,21 @@ Rossmann operates over 3,000 drug stores across 7 European countries. The task i
 - **External Influences**: Integration of holidays, promotions, and competitor data.
 - **Time Series Forecasting**: Sales predictions using historical data.
 - **Machine Learning Models**: ......
-## Table of Contents
-- [Introduction](#introduction)
-- [Dataset](#dataset)
-- [Project Structure](#project-structure)
-- [Data Preprocessing](#data-preprocessing)
-- [Deep Learning Model](#deep-learning-model)
-- [Feature Importance & Confidence Interval](#feature-importance--confidence-interval)
-- [Model Serialization](#model-serialization)
-- [Conclusion](#conclusion)
+  
+<details>
+  <summary>Table of Contents</summary>
+
+  - [Introduction](#introduction)
+  - [Dataset](#dataset)
+  - [Project Structure](#project-structure)
+  - [Data Preprocessing](#data-preprocessing)
+  - [Deep Learning Model](#deep-learning-model)
+  - [Feature Importance & Confidence Interval](#feature-importance--confidence-interval)
+  - [Model Serialization](#model-serialization)
+  - [Conclusion](#conclusion)
+
+</details>
+
 
 ## Introduction
 
